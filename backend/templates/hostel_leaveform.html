@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hostel Student Leave Form</title>
+
+<style>
+@page { size: auto; margin: 15mm; }
+
+body {
+    margin: 0;
+    background: #eee;
+    font-family: "Times New Roman", serif;
+    font-size: 15px;
+}
+
+.page {
+    width: 210mm;
+    margin: 20px auto;
+    background: #fff;
+    padding: 8mm;
+    box-sizing: border-box;
+    font-size: 16.5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    border: 1px solid #000;
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.center {
+    text-align: center;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.logo {
+    height: 45px;
+    display: block;
+    margin: auto;
+}
+
+.verified-container {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.verified-img {
+    height: 31px;
+    width: auto;
+    float: right;
+}
+
+.sign {
+    height: 65px;
+    text-align: center;
+    vertical-align: bottom;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<table>
+<colgroup>
+    <col style="width:18%">
+    <col style="width:17%">
+    <col style="width:17%">
+    <col style="width:18%">
+    <col style="width:15%">
+    <col style="width:15%">
+</colgroup>
+
+<tr>
+    <td rowspan="2" class="center">
+        <img src="{{ logo_path }}" class="logo">
+    </td>
+    <td colspan="5" class="center" style="font-size:18px;">
+        CIT CHENNAI GROUP OF INSTITUTIONS
+    </td>
+</tr>
+
+<tr>
+    <td colspan="5" class="center" style="font-size:16px; padding:8px 0;">
+        HOSTEL STUDENT LEAVE FORM
+    </td>
+</tr>
+
+<tr>
+    <td><b>NAME</b></td>
+    <td colspan="2">{{ name }}</td>
+    <td><b>ROOM NO</b></td>
+    <td colspan="2">{{ room_no or "N/A" }}</td>
+</tr>
+
+<tr>
+    <td><b>DEPARTMENT</b></td>
+    <td colspan="2">{{ department }}</td>
+    <td><b>YEAR / SEM</b></td>
+    <td colspan="2">{{ year_of_study }}</td>
+</tr>
+
+<tr>
+    <td><b>PARENT MOBILE NO</b></td>
+    <td colspan="2">{{ parent_mobile }}</td>
+    <td><b>STUDENT MOBILE NO</b></td>
+    <td colspan="2">{{ student_mobile }}</td>
+</tr>
+
+<tr>
+    <td><b>PURPOSE</b></td>
+    <td colspan="5">{{ purpose }}</td>
+</tr>
+
+<tr>
+    <td><b>OUT DATE</b></td>
+    <td colspan="2">{{ out_date }}</td>
+    <td><b>IN DATE</b></td>
+    <td colspan="2">{{ in_date or "N/A" }}</td>
+</tr>
+
+<tr>
+    <td><b>OUT TIME</b></td>
+    <td colspan="2">{{ out_time }}</td>
+    <td><b>IN TIME</b></td>
+    <td colspan="2">{{ in_time or "N/A" }}</td>
+</tr>
+
+
+</table>
+
+<div class="verified-container">
+    <img src="{{ verified_path }}" alt="Verified" class="verified-img">
+</div>
+
+</div>
+</body>
+</html>

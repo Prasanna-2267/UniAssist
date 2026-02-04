@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Login Test</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<h2>Google Login Test</h2>
+
+<div id="g_id_onload"
+     data-client_id="485710408731-kq25d0i57ve36qn21k9mnhsnpqiracu4.apps.googleusercontent.com"
+     data-callback="handleLogin">
+</div>
+
+<div class="g_id_signin"></div>
+
+<button onclick="testAPI()">Test Protected API</button>
+
+<pre id="out"></pre>
+
+<script>
+function handleLogin(res) {
+  fetch("http://localhost:8000/auth/google-login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ token: res.credential })
+  })
+  .then(r => r.json())
+  .then(d => {
+    localStorage.setItem("jwt", d.access_token);
+    document.getElementById("out").textContent = JSON.stringify(d, null, 2);
+  });
+}
+
+function testAPI() {
+  fetch("http://localhost:8000/test-auth", {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("jwt")
+    }
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("out").textContent = JSON.stringify(d, null, 2);
+  });
+}
+</script>
+
+</body>
+</html>

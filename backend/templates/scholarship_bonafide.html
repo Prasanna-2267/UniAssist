@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bonafide Certificate</title>
+
+    <style>
+        /* Lock page size for print & PDF */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            background: #f0f0f0;
+            font-family: "Times New Roman", serif;
+        }
+
+        /* A4 page container */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            margin: 20px auto;
+            padding: 20mm;
+            background: white;
+            box-sizing: border-box;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 8mm 0;          /* space so logo is NOT cut */
+            box-sizing: border-box;
+        }
+
+        /* College Logo – FIXED PROPERLY */
+        .college-logo {
+            max-height: 75px;        /* controls vertical size */
+            width: auto;             /* keeps proportion */
+            object-fit: contain;
+            display: block;
+        }
+
+        hr {
+            margin: 15px 0 30px 0;
+        }
+
+        /* Title */
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 30px;
+        }
+
+        /* Content */
+        .content {
+            text-align: justify;
+        }
+
+        /* Date */
+        .date {
+            margin-top: 30px;
+        }
+
+        /* Principal Signature */
+        .principal-sign {
+            margin-top: 80px;
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="a4-page">
+
+    <!-- Header -->
+    <div class="header">
+        <img src="C:\Users\Prasanna Saravanan\Downloads\FullStack\Project\logo.jpeg" class="college-logo" alt="College Logo">
+    </div>
+
+    <hr>
+
+    <!-- Title -->
+    <div class="title">BONAFIDE CERTIFICATE</div>
+
+    <!-- Content -->
+    <div class="content">
+        This is to certify that <b>{{ name }}</b>,
+        bearing Register Number <b>{{ reg_no }}</b>,
+        is a bonafide student of the Department of
+        <b>{{ department }}</b> in this institution
+        during the academic year <b> 2025-26</b>.
+        <br><br>
+        This certificate is issued for the purpose of
+        <b>{{ purpose }}</b>.
+    </div>
+
+    <!-- Date -->
+    <div class="date">
+        Date: {{ date }}
+    </div>
+
+    <!-- Principal Signature -->
+    <div class="principal-sign">
+        Principal<br>
+        (Seal & Signature)
+    </div>
+
+</div>
+
+</body>
+</html>

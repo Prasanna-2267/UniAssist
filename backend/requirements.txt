@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-dotenv
+python-jose
+google-auth
+requests
+jinja2
+pdfkit
+langchain-google-genai
+langchain-core
+python-multipart
+psycopg2-binary

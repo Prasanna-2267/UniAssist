@@ -1,0 +1,78 @@
+# =====================================================
+# 🌐 FRONTEND (React / Vite) → /frontend
+# =====================================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+
+frontend/.env
+frontend/.env.*
+frontend/*.log
+
+# =====================================================
+# 🐍 BACKEND (FastAPI / Python) → /backend
+# =====================================================
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+
+# Virtual environments
+backend/.venv/
+backend/venv/
+backend/env/
+backend/ENV/
+
+# Python build files
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/.pytest_cache/
+backend/.mypy_cache/
+
+# Logs
+backend/*.log
+
+# =====================================================
+# 🔐 ENV & SECRETS (ANYWHERE)
+# =====================================================
+.env
+.env.*
+*.env
+secrets.json
+
+# =====================================================
+# 🗄 DATABASE FILES
+# =====================================================
+*.db
+*.sqlite3
+*.sqlite
+
+# =====================================================
+# 📦 GENERATED FILES
+# =====================================================
+uploads/
+generated_pdfs/
+*.pdf
+
+# =====================================================
+# 🧠 IDE / EDITOR
+# =====================================================
+.vscode/
+.idea/
+*.swp
+*.suo
+*.sln
+
+# =====================================================
+# 🖥 OS FILES
+# =====================================================
+.DS_Store
+Thumbs.db
+
+# =====================================================
+# 🔥 LOG FILES
+# =====================================================
+*.log
+logs/

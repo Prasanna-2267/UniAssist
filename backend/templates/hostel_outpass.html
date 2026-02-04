@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hostel Student Outpass</title>
+
+<style>
+@page { size: auto; margin: 15mm; }
+
+body {
+    margin: 0;
+    background: #eaeaea;
+    font-family: "Times New Roman", serif;
+}
+
+.page {
+    width: 210mm;
+    margin: 20px auto;
+    background: #fff;
+    padding: 10mm;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    border: 1px solid #000;
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.center {
+    text-align: center;
+    font-weight: bold;
+}
+
+.logo {
+    height: 50px;
+    display: block;
+    margin: auto;
+}
+
+.verified-container {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.verified-img {
+    height: 31px;
+    width: auto;
+    float: right;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<table>
+<colgroup>
+    <col style="width:18%">
+    <col style="width:17%">
+    <col style="width:17%">
+    <col style="width:18%">
+    <col style="width:15%">
+    <col style="width:15%">
+</colgroup>
+
+<tr>
+    <td rowspan="2" class="center">
+        <img src="{{ logo_path }}" class="logo">
+    </td>
+    <td colspan="5" class="center" style="font-size:18px;">
+        CIT CHENNAI GROUP OF INSTITUTIONS
+        <br>
+        Sarathy Nagar, Kundrathur, Chennai – 69, Tamil Nadu
+    </td>
+</tr>
+
+<tr>
+    <td colspan="5" class="center" style="font-size:16px;">
+        HOSTEL STUDENTS OUTPASS
+    </td>
+</tr>
+
+<tr>
+    <td><b>DATE</b></td>
+    <td colspan="5">{{ date or  }}</td>
+</tr>
+
+<tr>
+    <td><b>NAME OF STUDENT</b></td>
+    <td colspan="2">{{ name }}</td>
+    <td><b>DEPARTMENT</b></td>
+    <td colspan="2">{{ department }}</td>
+</tr>
+
+<tr>
+    <td><b>YEAR / SEM</b></td>
+    <td colspan="2">{{ year_of_study }}</td>
+    <td><b>PURPOSE</b></td>
+    <td colspan="2">{{ purpose }}</td>
+</tr>
+
+<tr>
+    <td><b>OUT TIME</b></td>
+    <td colspan="2">{{ out_time }}</td>
+    <td><b>OUT DATE</b></td>
+    <td colspan="2">{{ out_date }}</td>
+</tr>
+<tr>
+    <td><b>IN TIME</b></td>
+    <td colspan="2">{{ in_time or "N/A" }}</td>
+    <td><b>IN DATE</b></td>
+    <td colspan="2">{{ in_date or "N/A" }}</td>
+</tr>
+
+</table>
+
+<div class="verified-container">
+    <img src="{{ verified_path }}" alt="Verified" class="verified-img">
+</div>
+
+</div>
+</body>
+</html>
