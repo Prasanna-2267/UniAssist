@@ -609,47 +609,41 @@ TEMPLATE_MAP = {
 # -------------------------------
 # WKHTMLTOPDF CONFIG
 # -------------------------------
+from jinja2 import Environment, FileSystemLoader
+import pdfkit, os
+
 WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
 config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
-# -------------------------------
-# PDF GENERATION
-# -------------------------------
 def generate_bonafide_pdf(data):
-
     env = Environment(loader=FileSystemLoader("templates"))
-    template = env.get_template(TEMPLATE_MAP[data["category"]])
 
-    html_content = template.render(
-        name=data["name"],
-        reg_no=data["reg_no"],
-        department=data["department"],
-        section=data["section"],
-        year_of_study=data["year_of_study"],
-        academic_year="2024-2025",
-        purpose=data["purpose"],
-        intern_start_date=data.get("intern_start_date"),
-        intern_end_date=data.get("intern_end_date"),
-        date=date.today()
-    )
+    template_map = {
+        "internship": "internship_bonafide.html",
+        "education_loan": "education_loan_bonafide.html",
+        "scholarship": "scholarship_bonafide.html",
+        "general": "general_bonafide.html"
+    }
+
+    template_name = TEMPLATE_MAP.get(data["category"], "general_bonafide.html")
+    template = env.get_template(template_name)
+
+    html_content = template.render(**data)
 
     os.makedirs("bonafides", exist_ok=True)
-    pdf_path = f"bonafides/bonafide_{data['reg_no']}.pdf"
+    pdf_path = f"bonafides/bonafide_{data['request_id']}.pdf"
 
     options = {
         "page-size": "A4",
         "encoding": "UTF-8",
-        "enable-local-file-access": ""
+        "enable-local-file-access": "",
+        "quiet": ""
     }
 
-    pdfkit.from_string(
-        html_content,
-        pdf_path,
-        options=options,
-        configuration=config
-    )
+    pdfkit.from_string(html_content, pdf_path, configuration=config, options=options)
 
     return pdf_path
+
 
 # -------------------------------
 # EMAIL SENDER
@@ -900,6 +894,67 @@ def hod_pending_bonafide(user=Depends(get_current_user), db: Session = Depends(g
 
     return result
 
+def fetch_bonafide_certificate_data(db: Session, request_id: int):
+    data = db.execute(text("""
+        SELECT
+            s.name,
+            s.reg_no,
+            s.department,
+            s.section,
+            s.year_of_study,
+            s.email,
+            s.gender,
+            s.residence_type,
+
+            b.request_id,
+            b.purpose,
+            b.category,
+            b.intern_start_date,
+            b.intern_end_date,
+            b.applied_at,
+            b.advisor_status,
+            b.hod_status
+
+        FROM bonafide_requests b
+        JOIN students s ON s.reg_no = b.reg_no
+        WHERE b.request_id = :rid
+    """), {"rid": request_id}).mappings().first()
+
+    if not data:
+        raise HTTPException(404, "Bonafide request not found")
+
+    data = dict(data)
+
+    # Derived fields
+    year_map = {1: "I", 2: "II", 3: "III", 4: "IV"}
+    data["year_roman"] = year_map.get(data["year_of_study"], "")
+    data["course"] = data["department"]
+    data["academic_year"] = f"{data['applied_at'].year}-{data['applied_at'].year + 1}"
+    data["logo_path"] = os.path.abspath("static/logo.jpg")
+
+    return data
+
+
+@app.get("/bonafide/certificate/{request_id}")
+def get_bonafide_certificate_data(
+    request_id: int,
+    payload=Depends(get_current_user_soft),
+    db: Session = Depends(get_db)
+):
+    if not payload:
+        raise HTTPException(401, "Invalid token")
+
+    data = fetch_bonafide_certificate_data(request_id, db)
+
+    if not data:
+        raise HTTPException(404, "Bonafide request not found")
+
+    return data
+
+
+
+
+
 @app.put("/bonafide/hod/review/{request_id}")
 def hod_review(request_id: int, review: BonafideReview, user=Depends(get_current_user), db: Session = Depends(get_db)):
     # 🔐 Only HOD allowed
@@ -926,9 +981,9 @@ def hod_review(request_id: int, review: BonafideReview, user=Depends(get_current
 
     # PDF + mail logic unchanged
     if review.status == "APPROVED":
-        data = db.execute(text("""SELECT s.name, s.reg_no, s.department, s.section, s.year_of_study, s.email, b.purpose, b.category, b.intern_start_date, b.intern_end_date FROM bonafide_requests b JOIN students s ON s.reg_no=b.reg_no WHERE b.request_id=:rid"""), {"rid": request_id}).mappings().first()
-        pdf_path = generate_bonafide_pdf(data)
-        send_bonafide_email(data["email"], pdf_path)
+        cert_data = fetch_bonafide_certificate_data(db,request_id)
+        pdf_path = generate_bonafide_pdf(cert_data)
+        send_bonafide_email(cert_data["email"], pdf_path)
 
     db.commit()
     return {"message": f"HOD {review.status.lower()} successfully"}

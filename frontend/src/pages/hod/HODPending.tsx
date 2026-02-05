@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import { hodApi } from '@/services/hodApi';
 
 type HODPendingRequest = {
-  id: string;
+  id: string;          // UI id (string for DataTable)
+  dbId: number;        // REAL backend id
   type: string;
   studentName: string;
   rollNumber: string;
@@ -22,48 +23,79 @@ type HODPendingRequest = {
 
 export default function HODPending() {
   const [requests, setRequests] = useState<HODPendingRequest[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<HODPendingRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // 🔥 LOAD FROM BACKEND
+  // 🔥 LOAD DATA
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await hodApi.getPendingAll();
+  const load = async () => {
+    try {
+      const data = await hodApi.getPendingAll();
 
-        const mapped: HODPendingRequest[] = (Array.isArray(data) ? data : []).map((r: any) => ({
-          id: String(r.id),
-          type: r.type.toLowerCase(),
+      const mapped: HODPendingRequest[] = (Array.isArray(data) ? data : []).map((r: any) => {
+        // 🔥 UNIVERSAL ID RESOLUTION (fixes "undefined" issue)
+        const realId =
+          r.id ??            // bonafide / normalized APIs
+          r.request_id ??    // bonafide table
+          r.leave_id ??      // leave table
+          r.outpass_id ??    // outpass table
+          r.od_id;           // od table
+
+        return {
+          id: String(realId),     // used by UI
+          dbId: Number(realId),   // used for API calls
+
+          type: r.type?.toLowerCase(),
           studentName: r.name,
           rollNumber: r.reg_no,
           department: r.department || 'CSE',
           createdAt: r.dt,
           advisorStatus: 'approved',
           status: 'pending',
-        }));
+        };
+      });
 
-        setRequests(mapped);
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to load requests');
-      }
-    };
-
-    load();
-  }, []);
-
-  const handleRowClick = (request: HODPendingRequest) => {
-    setSelectedRequest(request);
-    setModalOpen(true);
+      setRequests(mapped);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load requests');
+    }
   };
 
+  load();
+}, []);
+
+
+  // 🔍 FETCH DETAIL ON CLICK
+  const handleRowClick = async (request: HODPendingRequest) => {
+    try {
+      const detail = await hodApi.getRequestDetail(request.type, request.dbId);
+
+      setSelectedRequest({
+        ...detail,
+        id: request.id,
+        dbId: request.dbId,
+        type: detail.type?.toLowerCase(),
+        status: (detail.status || "pending").toLowerCase(),
+      });
+
+      setModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load request details");
+    }
+  };
+
+  // ✅ APPROVE
   const handleApprove = async (id: string, comment?: string) => {
     try {
       const req = requests.find(r => r.id === id);
       if (!req) return;
 
-      await hodApi.reviewRequest(req.type, Number(id), "APPROVED", comment);
+      await hodApi.reviewRequest(req.type, req.dbId, "APPROVED", comment);
+
       setRequests(prev => prev.filter(r => r.id !== id));
+      setModalOpen(false);
       toast.success('Request approved successfully');
     } catch (err) {
       console.error(err);
@@ -71,13 +103,16 @@ export default function HODPending() {
     }
   };
 
+  // ❌ REJECT
   const handleReject = async (id: string, comment?: string) => {
     try {
       const req = requests.find(r => r.id === id);
       if (!req) return;
 
-      await hodApi.reviewRequest(req.type, Number(id), "REJECTED", comment);
+      await hodApi.reviewRequest(req.type, req.dbId, "REJECTED", comment);
+
       setRequests(prev => prev.filter(r => r.id !== id));
+      setModalOpen(false);
       toast.success('Request rejected');
     } catch (err) {
       console.error(err);
@@ -160,7 +195,7 @@ export default function HODPending() {
       </Tabs>
 
       <RequestDetailModal
-        request={selectedRequest as any} 
+        request={selectedRequest}
         open={modalOpen}
         onOpenChange={setModalOpen}
         showActions

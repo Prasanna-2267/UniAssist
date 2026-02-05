@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GraduationCap } from "lucide-react";
+
 import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
@@ -55,9 +55,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <Card className="text-center shadow-lg">
           <CardHeader>
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-              <GraduationCap className="h-7 w-7 text-primary-foreground" />
-            </div>
+            <div className="mx-auto mb-4 flex items-center justify-center">
+  <img
+    src="/src/assets/logo.png"
+    alt="College Logo"
+    className="h-14 w-14 object-contain"
+  />
+</div>
+
             <CardTitle className="text-2xl">College Request Portal</CardTitle>
             <CardDescription>
               Sign in with your college Google account to continue

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Educational Loan Bonafide Certificate</title>
+
+<style>
+/* A4 page lock */
+
+@page {
+    size: A4;
+    margin: 0;
+}
+
+body {
+    font-family: "Georgia", "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
+}
+
+.content {
+    letter-spacing: 1px;
+    line-height: 1.9;
+}
+
+
+* {
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    margin: 0;
+    background: #eaeaea;
+    font-family: "Georgia", "Times New Roman", serif;
+}
+
+.a4-page {
+    width: 210mm;
+    height: 297mm;
+    margin: 20px auto;
+    padding: 20mm;
+    background: #ffffff;
+    box-sizing: border-box;
+
+    font-family: "Times New Roman", serif;
+    font-size: 16px;
+    line-height: 1.9;
+
+    letter-spacing: 0.9px;     /* more breathing */       /* separates words slightly */
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+}
+
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.header-left {
+    display: flex;
+    gap: 10px;
+}
+
+.college-logo {
+    height: 75px;
+    width: auto;
+}
+
+.college-text {
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.college-name {
+    font-size: 22px;
+}
+
+.college-sub {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+/* Date */
+.date {
+    font-weight: bold;
+}
+
+/* Line */
+hr {
+    margin: 10px 0 25px 0;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 25px;
+}
+
+/* Content */
+.content {
+    text-align: justify;
+    letter-spacing: 1px;
+    padding: 1.5px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 15px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.left {
+    text-align: left;
+}
+
+/* Footer text */
+.purpose {
+    margin-top: 25px;
+}
+
+/* Signature */
+.signature {
+    margin-top: 60px;
+    text-align: right;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="a4-page">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <img src="{{logo_path}}" class="college-logo">
+            <div class="college-text">
+               
+                
+            </div>
+        </div>
+
+        
+        
+    </div>
+
+    <hr>
+
+    <!-- Title -->
+    <div class="title">Bonafide Certificate</div>
+
+    <!-- Content -->
+    <div class="content">
+        This is to certify that <b>{{ name }}</b>
+        (Reg. No: <b>{{ reg_no }}</b>),
+        is a bonafide student of our college.
+        She/He is studying in <b>{{ year }}</b> Year
+        <b>{{ course }}</b> degree course during the academic year
+        <b>{{ academic_year }}</b>.
+        The duration of the study period is
+        <b>{{ study_from }}</b> to <b>{{ study_to }}</b>.
+    </div>
+
+    <!-- Fee Table -->
+    <table>
+        <tr>
+            <th rowspan="2">Particulars</th>
+            <th>II Year<br>(2025–26)</th>
+            <th>III Year<br>(2026–27)</th>
+            <th>IV Year<br>(2027–28)</th>
+        </tr>
+
+        <tr>
+            <th>Rs.</th>
+            <th>Rs.</th>
+            <th>Rs.</th>
+        </tr>
+
+        <tr>
+            <td class="left">Tuition Fees</td>
+            <td>50,000</td>
+            <td>50,000</td>
+            <td>50,000</td>
+        </tr>
+
+        <tr>
+            <td class="left">Development Fees</td>
+            <td>5,000</td>
+            <td>5,000</td>
+            <td>5,000</td>
+        </tr>
+
+        <tr>
+            <td class="left">Training Fee</td>
+            <td>15,000</td>
+            <td>15,000</td>
+            <td>15,000</td>
+        </tr>
+
+        <tr>
+            <td class="left">Hostel Fees</td>
+            <td>2,15,000</td>
+            <td>2,15,000</td>
+            <td>2,15,000</td>
+        </tr>
+
+        <tr>
+            <th class="left">Sub Total Amount</th>
+            <th>2,85,000</th>
+            <th>2,85,000</th>
+            <th>2,85,000</th>
+        </tr>
+
+        <tr>
+            <td class="left">Trust Concession</td>
+            <td>15,000</td>
+            <td>15,000</td>
+            <td>15,000</td>
+        </tr>
+
+        <tr>
+            <th class="left">Total Amount</th>
+            <th>2,70,000</th>
+            <th>2,70,000</th>
+            <th>2,70,000</th>
+        </tr>
+    </table>
+
+    <!-- Purpose -->
+    <div class="purpose">
+        This certificate is issued at the request of the individual
+        for the purpose of availing <b>Educational Loan</b>.
+    </div>
+
+    <!-- Signature -->
+    <div class="signature">
+        <br>
+        PRINCIPAL<br>
+        Dr. A. Ramesh, M.E., Ph.D.<br>
+        Chennai Institute of Technology
+    </div>
+
+</div>
+
+</body>
+</html>

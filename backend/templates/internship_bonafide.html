@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bonafide Certificate</title>
+
+<style>
+    body {
+        font-family: "Times New Roman", serif;
+        margin: 40px;
+    }
+
+    .form-box {
+        background: #f2f2f2;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 8px;
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        margin: 6px 0;
+        font-size: 15px;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: auto;
+        border: 1px solid black;
+        padding: 30px;
+    }
+
+    .header {
+        text-align: center;
+    }
+
+    .header img {
+        height: 80px;
+    }
+
+    .title {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .line {
+        border-top: 2px solid black;
+        margin: 10px 0;
+    }
+
+    .content {
+        font-size: 16px;
+        line-height: 1.7;
+        text-align: justify;
+        letter-spacing: 0.5px;
+    }
+
+    .signature img {
+        height: 60px;
+    }
+
+    @media print {
+        .form-box {
+            display: none;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <img src="{{logo_path}}" alt="College Logo">
+        <div class="title">CHENNAI INSTITUTE OF TECHNOLOGY</div>
+        <div>Sarathy Nagar, Kundrathur, Chennai - 600069</div>
+        <div class="line"></div>
+    </div>
+
+    <p><b>Date:</b> <span id="outDate">--</span></p>
+
+    <p>
+        To <br>
+        The HR Manager<br>
+        {{ company_address }}
+    </p>
+
+    <p><b>Subject:</b> Declaration for Internship</p>
+
+    <div class="content">
+        This is to certify that <b>{{ name }}</b>
+        (Reg. No: <b>{{ reg_no }}</b>)
+        is a bonafide student of Chennai Institute of Technology,
+        pursuing Bachelor of Engineering in
+        <b> Computer Science and Engineering </b> {{ academic_year }}, has been permitted by the college to undergo an internship at your esteemed organisation as a part of the academic curriculum.
+
+        <br><br>
+
+        The internship period will be from
+        <b>{{ startmonth }}</b> to <b>{{ endmonth }}</b> , during which the student will be engaged in learning and practical training related to their field of study. We have no objection to Mr./Ms.<b>{{ student_name }}</b> undertaking this internship and wish him/her success in this professional learning experience.
+    </div>
+
+    <br><br>
+
+    <div class="signature">
+        <img src="C:\Users\Meenakshi Sundar\OneDrive\Pictures\Screenshots\Screenshot 2025-12-31 102149.png">
+        <p><b>Dr. S. Pavithra</b><br>
+        Head of the Department<br>
+        Computer Science and Engineering</p>
+    </div>
+
+</div>
+
+</body>
+</html>
