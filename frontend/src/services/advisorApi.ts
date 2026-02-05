@@ -30,6 +30,10 @@ export const advisorApi = {
   getDashboardStats: () =>
   fetchWithAuth("/advisor/dashboard-stats"),
 
+  getRequestDetail: (type: string, id: number) =>
+  fetchWithAuth(`/${type}/detail/${id}`),
+
+
 getRequestBreakdown: () =>
   fetchWithAuth("/advisor/request-breakdown"),
 

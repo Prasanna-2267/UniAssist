@@ -3428,51 +3428,61 @@ def get_request_detail(rtype: str, rid: int, db: Session = Depends(get_db)):
 @app.get("/outpass/detail/{outpass_id}")
 def get_outpass_detail(
     outpass_id: int,
-    user=Depends(get_current_user),
+    payload=Depends(get_current_user_soft),
     db: Session = Depends(get_db)
 ):
-    if user["role"].lower() != "warden":
-        raise HTTPException(403, "Only wardens allowed")
+    role = payload.get("role")
 
-    result = db.execute(
+    if role not in ["student", "advisor","hod", "warden"]:
+        raise HTTPException(403, "Not allowed")
+    data = db.execute(
         text("""
             SELECT
-                o.outpass_id            AS "id",
-                'outpass'               AS "type",
+                o.outpass_id AS id,
+                'outpass' AS type,
 
-                s.reg_no                AS "studentId",
-                s.name                  AS "studentName",
-                s.reg_no                AS "rollNumber",
-                s.department            AS "department",
+                -- 👤 Student Info
+                s.name AS studentName,
+                s.reg_no AS rollNumber,
+                s.department,
+                s.email AS studentEmail,
+                o.year_of_study,
 
-                o.out_date              AS "outDate",
-                o.out_time              AS "outTime",
-                o.in_date               AS "inDate",
-                o.in_time               AS "inTime",
+                -- 📄 Outpass Details
+                o.out_date AS outDate,
+                o.out_time AS outTime,
+                o.in_date AS inDate,
+                o.in_time AS inTime,
+                o.purpose,
+                o.contact_number AS contactNumber,
+                o.parent_mobile AS parentContact,
 
-                s.contact_number                 AS "contactNumber",
-                o.parent_mobile         AS "parentContact",
+                -- 🏨 Hostel Info
+                o.hostel_id AS hostelId,
+                o.floor_id AS floorId,
+                o.room_no AS roomNumber,
 
-                o.purpose               AS "purpose",
-                o.room_no               AS "roomNumber",
+                -- 📊 Status Info
+                o.advisor_status AS advisorStatus,
+                o.hod_status AS hodStatus,
+                o.warden_status AS wardenStatus,
 
-                'pending'               AS "status",
+                -- ⏱ Dates
+                o.created_at AS createdAt,
+                o.hod_reviewed_at AS hodActedAt
 
-                o.out_date              AS "createdAt",
-                o.out_date              AS "updatedAt",
-
-                TRUE                    AS "isHosteler"
             FROM outpass_requests o
             JOIN students s ON s.reg_no = o.reg_no
-            WHERE o.outpass_id = :outpass_id
+            WHERE o.outpass_id = :id
         """),
-        {"outpass_id": outpass_id}
+        {"id": outpass_id}
     ).mappings().first()
 
-    if not result:
-        raise HTTPException(404, "Outpass not found")
+    if not data:
+        raise HTTPException(404, "Outpass request not found")
 
-    return result
+    return data
+
 
 
 
@@ -3488,7 +3498,9 @@ def get_bonafide_detail(request_id: int, db: Session = Depends(get_db)):
             s.department,
             b.category,
             b.purpose,
-            b.applied_at AS submittedAt,     -- ✅ FIX
+            b.applied_at AS submittedAt, 
+            b.intern_start_date AS internshipStartDate,
+            b.intern_end_date AS internshipEndDate, -- ✅ FIX
             b.hod_status AS status,
             b.advisor_status
         FROM bonafide_requests b
@@ -3624,5 +3636,54 @@ def warden_history(
           AND o.warden_status IN ('APPROVED','REJECTED')
         ORDER BY o.outpass_id DESC
     """), {"wid": warden_id}).mappings().all()
+
+    return data
+@app.get("/leave/detail/{leave_id}")
+def get_leave_detail(
+    leave_id: int,
+    payload=Depends(get_current_user_soft),   # works for student & advisor tokens
+    db: Session = Depends(get_db)
+):
+
+    role = payload.get("role")
+
+    if role not in ["student", "advisor"]:
+        raise HTTPException(403, "Not allowed")
+
+    data = db.execute(
+        text("""
+            SELECT
+                l.leave_id AS id,
+                'leave' AS type,
+
+                -- 👤 Student Info
+                s.name AS studentName,
+                s.reg_no AS rollNumber,
+                s.department,
+                s.email AS studentEmail,
+
+                -- 📄 Leave Details
+                l.category,
+                l.start_date AS startDate,
+                l.end_date AS endDate,
+                l.reason,
+
+                -- 📊 Status Info
+                l.status,
+                l.advisor_remark AS advisorComment,
+
+                -- ⏱ Dates
+                l.applied_at AS createdAt,
+                l.advisor_reviewed_at AS advisorActedAt
+
+            FROM leave_requests l
+            JOIN students s ON s.reg_no = l.reg_no
+            WHERE l.leave_id = :id
+        """),
+        {"id": leave_id}
+    ).mappings().first()
+
+    if not data:
+        raise HTTPException(404, "Leave request not found")
 
     return data

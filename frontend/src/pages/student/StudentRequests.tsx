@@ -18,24 +18,38 @@ export default function StudentRequests() {
 
   // 🔥 Load from backend
   React.useEffect(() => {
-    const loadRequests = async () => {
-      try {
-        const data = await studentApi.getStudentRequests();
-        setRequests(data);
-      } catch (err) {
-        console.error("Failed to fetch requests", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadRequests = async () => {
+    try {
+      const data = await studentApi.getStudentRequests();
 
-    loadRequests();
-  }, []);
+      const normalized = data.map((r: any) => ({
+        id: r.id,
+        type: r.type.toLowerCase(),          // FIX 1
+        createdAt: r.created_at,             // FIX 2
+        status: r.status.toLowerCase(),      // FIX 3
+      }));
 
-  const handleRowClick = (request: Request) => {
-    setSelectedRequest(request);
-    setModalOpen(true);
+      setRequests(normalized);
+    } catch (err) {
+      console.error("Failed to fetch requests", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  loadRequests();
+}, []);
+
+  const handleRowClick = async (request: Request) => {
+  try {
+    const detail = await studentApi.getRequestDetail(request.type, request.id);
+    setSelectedRequest(detail);   // FULL backend data
+    setModalOpen(true);
+  } catch (err) {
+    console.error("Failed to load request detail", err);
+  }
+};
+
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {

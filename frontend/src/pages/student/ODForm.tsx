@@ -3,24 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { studentApi } from '@/services/studentApi';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Loader2, Upload, FileText, X } from 'lucide-react';
-import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { Loader2, UploadCloud, FileCheck2, X } from 'lucide-react';
 
 function formatTimeForAPI(time?: string) {
   if (!time || time.trim() === "") return undefined;
@@ -28,18 +25,16 @@ function formatTimeForAPI(time?: string) {
 }
 
 const odSchema = z.object({
-  fromDate: z.string().min(1, 'From date is required'),
-  toDate: z.string().min(1, 'To date is required'),
-  purpose: z.string().min(1, 'Purpose is required').max(500),
-  proofFile: z.instanceof(File, { message: 'Proof file (PDF) is required' })
-    .refine((file) => file.type === 'application/pdf', 'Only PDF files are allowed')
-    .refine((file) => file.size <= 5 * 1024 * 1024, 'File size must be less than 5MB'),
+  fromDate: z.string().min(1),
+  toDate: z.string().min(1),
+  purpose: z.string().min(1).max(500),
+  proofFile: z.instanceof(File),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   place: z.string().optional(),
-}).refine((data) => new Date(data.toDate) >= new Date(data.fromDate), {
-  message: 'To date must be after from date',
-  path: ['toDate'],
+}).refine((d) => new Date(d.toDate) >= new Date(d.fromDate), {
+  message: "To date must be after from date",
+  path: ["toDate"],
 });
 
 type ODFormData = z.infer<typeof odSchema>;
@@ -65,43 +60,30 @@ export default function ODForm() {
   const selectedFile = form.watch('proofFile');
 
   const onSubmit = async (data: ODFormData) => {
-  setIsSubmitting(true);
-
-  try {
-    await studentApi.createODRequest(
-      {
-        fromDate: data.fromDate,
-        toDate: data.toDate,
-        startTime: formatTimeForAPI(data.startTime),
-        endTime: formatTimeForAPI(data.endTime),
-        purpose: data.purpose,
-        place: data.place?.trim() ? data.place : undefined,
-      },
-      data.proofFile
-    );
-
-    toast.success("OD request submitted successfully");
-    navigate("/student/requests");
-
-  } catch (error: any) {
-    toast.error(error.message || "Submission failed");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      form.setValue('proofFile', file, { shouldValidate: true });
+    setIsSubmitting(true);
+    try {
+      await studentApi.createODRequest(
+        {
+          fromDate: data.fromDate,
+          toDate: data.toDate,
+          startTime: formatTimeForAPI(data.startTime),
+          endTime: formatTimeForAPI(data.endTime),
+          purpose: data.purpose,
+          place: data.place?.trim() || undefined,
+        },
+        data.proofFile
+      );
+      toast.success("OD request submitted successfully");
+      navigate("/student/requests");
+    } catch (e: any) {
+      toast.error(e.message || "Submission failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const removeFile = () => {
-    form.setValue('proofFile', undefined as unknown as File, { shouldValidate: true });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  const inputStyle =
+    "w-full h-10 border border-input bg-background px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
 
   return (
     <DashboardLayout>
@@ -112,11 +94,20 @@ export default function ODForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
+              {/* Dates */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField control={form.control} name="fromDate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>From Date *</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormControl>
+                      <DatePicker
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(d) => field.onChange(d?.toISOString().split("T")[0])}
+                        dateFormat="dd-MM-yyyy"
+                        wrapperClassName="w-full"
+                        className={inputStyle}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -124,67 +115,87 @@ export default function ODForm() {
                 <FormField control={form.control} name="toDate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>To Date *</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormControl>
+                      <DatePicker
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(d) => field.onChange(d?.toISOString().split("T")[0])}
+                        dateFormat="dd-MM-yyyy"
+                        wrapperClassName="w-full"
+                        className={inputStyle}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
               </div>
 
+              {/* Time */}
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormField control={form.control} name="startTime" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Time (Optional)</FormLabel>
-                    <FormControl><Input type="time" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <FormField control={form.control} name="endTime" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Time (Optional)</FormLabel>
-                    <FormControl><Input type="time" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                {["startTime", "endTime"].map((name, i) => (
+                  <FormField key={name} control={form.control} name={name as any} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{i === 0 ? "Start Time" : "End Time"} (Optional)</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          selected={field.value ? new Date(`1970-01-01T${field.value}`) : null}
+                          onChange={(d) => field.onChange(d?.toTimeString().slice(0, 5))}
+                          showTimeSelect
+                          showTimeSelectOnly
+                          timeIntervals={15}
+                          timeCaption="Time"
+                          dateFormat="HH:mm"
+                          wrapperClassName="w-full"
+                          className={inputStyle}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                ))}
               </div>
 
+              {/* Place */}
               <FormField control={form.control} name="place" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Place (Optional)</FormLabel>
-                  <FormControl><Input placeholder="Location of the event/activity" {...field} /></FormControl>
-                  <FormMessage />
+                  <FormControl><Input {...field} /></FormControl>
                 </FormItem>
               )} />
 
+              {/* Purpose */}
               <FormField control={form.control} name="purpose" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Purpose *</FormLabel>
                   <FormControl><Textarea className="min-h-[100px]" {...field} /></FormControl>
-                  <FormMessage />
                 </FormItem>
               )} />
 
+              {/* Upload */}
               <FormField control={form.control} name="proofFile" render={() => (
                 <FormItem>
                   <FormLabel>Proof File (PDF) *</FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
-                      <input ref={fileInputRef} type="file" accept=".pdf" onChange={handleFileChange} className="hidden" />
+                    <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted"
+                         onClick={() => fileInputRef.current?.click()}>
+                      <input ref={fileInputRef} type="file" accept=".pdf" hidden
+                             onChange={(e) => form.setValue('proofFile', e.target.files?.[0] as File)} />
                       {!selectedFile ? (
-                        <div onClick={() => fileInputRef.current?.click()} className="upload-box">
-                          <Upload className="h-8 w-8 mb-2" />
-                          <p>Click to upload PDF</p>
-                        </div>
+                        <>
+                          <UploadCloud className="mx-auto h-10 w-10 text-muted-foreground" />
+                          <p className="text-sm mt-2">Click to upload PDF</p>
+                        </>
                       ) : (
-                        <div className="file-preview">
-                          <FileText className="h-5 w-5" />
-                          <span>{selectedFile.name}</span>
-                          <Button type="button" onClick={removeFile}><X /></Button>
+                        <div className="flex justify-between items-center">
+                          <FileCheck2 className="h-5 w-5 text-green-600" />
+                          <span className="text-sm">{selectedFile.name}</span>
+                          <X className="cursor-pointer" onClick={(e) => {
+                            e.stopPropagation();
+                            form.setValue('proofFile', undefined as any);
+                          }} />
                         </div>
                       )}
                     </div>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )} />
 

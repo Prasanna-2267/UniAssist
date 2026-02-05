@@ -10,7 +10,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from './StatusBadge';
 import { Request, ComplaintStatus } from '@/types';
 import { format } from 'date-fns';
-import { FileText, Calendar, Clock, User, MapPin, Phone, Building } from 'lucide-react';
+import {
+  FileText,
+  Calendar,
+  Clock,
+  User,
+  MapPin,
+  Phone,
+  Building,
+} from 'lucide-react';
 
 interface RequestDetailModalProps {
   request: Request | null;
@@ -35,11 +43,39 @@ export function RequestDetailModal({
 
   if (!request) return null;
 
-  /* 🔥 UNIVERSAL FIELD NORMALIZATION (NO LOGIC CHANGE) */
-  const studentName = request.studentName || (request as any).name;
-  const rollNumber = request.rollNumber || (request as any).rollNo;
-  const createdAt = request.createdAt || (request as any).submittedAt;
-  /* SAFE DATE FORMATTER */
+  // 🔥 UNIVERSAL NORMALIZER (handles backend inconsistencies)
+  const normalized = {
+    id: request.id,
+    type: request.type?.toLowerCase(),
+    status: request.status?.toLowerCase(),
+
+    studentName: (request as any).studentname || (request as any).name,
+    rollNumber: (request as any).rollnumber || (request as any).rollNo || (request as any).rollno,
+    department: request.department,
+
+    createdAt: (request as any).createdAt || (request as any).submittedAt || (request as any).createdat || (request as any).submittedat,
+
+    // Outpass
+    outDate: (request as any).outDate || (request as any).outdate,
+    outTime: (request as any).outTime || (request as any).outtime,
+    inDate: (request as any).inDate || (request as any).indate,
+    inTime: (request as any).inTime || (request as any).intime,
+    contactNumber: (request as any).contactNumber || (request as any).contactnumber,
+    parentContact: (request as any).parentContact || (request as any).parentcontact,
+    roomNumber: (request as any).roomNumber || (request as any).room_no || (request as any).roomnumber,
+
+    // Bonafide
+    category: (request as any).category,
+    purpose: (request as any).purpose,
+
+    // OD
+    fromDate: (request as any).fromDate || (request as any).fromdate,
+    toDate: (request as any).toDate || (request as any).todate,
+    startTime: (request as any).startTime || (request as any).starttime,
+    endTime: (request as any).endTime || (request as any).endtime,
+    place: (request as any).place,
+  };
+
   const safeFormat = (date?: string, type: 'date' | 'datetime' = 'date') => {
     if (!date) return '-';
     const d = new Date(date);
@@ -57,93 +93,53 @@ export function RequestDetailModal({
   };
 
   const renderDetails = () => {
-    switch (request.type) {
+    switch (normalized.type) {
       case 'leave':
         return (
           <>
-            <DetailRow icon={Calendar} label="Start Date" value={safeFormat(request.startDate)} />
-            <DetailRow icon={Calendar} label="End Date" value={safeFormat(request.endDate)} />
-            <DetailRow icon={FileText} label="Category" value={request.category} />
-            {request.reason && <DetailRow icon={FileText} label="Reason" value={request.reason} />}
+            <DetailRow icon={Calendar} label="Start Date" value={safeFormat((request as any).startdate)} />
+            <DetailRow icon={Calendar} label="End Date" value={safeFormat((request as any).enddate)} />
+            <DetailRow icon={FileText} label="Category" value={normalized.category} />
+            {(request as any).reason && (
+              <DetailRow icon={FileText} label="Reason" value={(request as any).reason} />
+            )}
           </>
         );
 
       case 'bonafide':
         return (
           <>
-            <DetailRow icon={FileText} label="Category" value={request.category} />
-            {request.purpose && <DetailRow icon={FileText} label="Purpose" value={request.purpose} />}
-            {request.category === 'internship' && (
-              <>
-                <DetailRow icon={Calendar} label="Internship Start" value={safeFormat(request.internshipStartDate)} />
-                <DetailRow icon={Calendar} label="Internship End" value={safeFormat(request.internshipEndDate)} />
-              </>
-            )}
+            <DetailRow icon={FileText} label="Category" value={normalized.category} />
+            <DetailRow icon={FileText} label="Purpose" value={normalized.purpose} />
           </>
         );
 
       case 'outpass':
-        const contactNumber = request.contactNumber ?? request.contact;
-        const parentContact = request.parentContact ?? request.parentMobile;
         return (
           <>
-            <DetailRow icon={Calendar} label="Out Date" value={safeFormat(request.outDate)} />
-            <DetailRow icon={Clock} label="Out Time" value={request.outTime} />
-            {request.inDate && <DetailRow icon={Calendar} label="In Date" value={safeFormat(request.inDate)} />}
-            {request.inTime && <DetailRow icon={Clock} label="In Time" value={request.inTime} />}
-            <DetailRow icon={Phone} label="Contact" value={contactNumber} />
-            <DetailRow icon={Phone} label="Parent Contact" value={parentContact} />
-            <DetailRow icon={FileText} label="Purpose" value={request.purpose} />
-            {request.isHosteler && (
-              <>
-                <DetailRow icon={Building} label="Hostel ID" value={request.hostelId} />
-                <DetailRow icon={Building} label="Floor" value={request.floorId} />
-                <DetailRow icon={Building} label="Room" value={request.roomNumber} />
-              </>
-            )}
+            <DetailRow icon={Calendar} label="Out Date" value={safeFormat(normalized.outDate)} />
+            <DetailRow icon={Clock} label="Out Time" value={normalized.outTime} />
+            <DetailRow icon={Phone} label="Contact" value={normalized.contactNumber} />
+            <DetailRow icon={Phone} label="Parent Contact" value={normalized.parentContact} />
+            <DetailRow icon={FileText} label="Purpose" value={normalized.purpose} />
+            <DetailRow icon={Building} label="Room" value={normalized.roomNumber} />
           </>
         );
 
       case 'od':
         return (
           <>
-            <DetailRow icon={Calendar} label="From Date" value={safeFormat(request.fromDate)} />
-            <DetailRow icon={Calendar} label="To Date" value={safeFormat(request.toDate)} />
-            <DetailRow icon={FileText} label="Purpose" value={request.purpose} />
-            {request.startTime && <DetailRow icon={Clock} label="Start Time" value={request.startTime} />}
-            {request.endTime && <DetailRow icon={Clock} label="End Time" value={request.endTime} />}
-            {request.place && <DetailRow icon={MapPin} label="Place" value={request.place} />}
-            {request.proofFile && (
-              <DetailRow
-                icon={FileText}
-                label="Proof File"
-                value={
-                  <a href={request.proofFile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {request.proofFileName}
-                  </a>
-                }
-              />
-            )}
+            <DetailRow icon={Calendar} label="From Date" value={safeFormat(normalized.fromDate)} />
+            <DetailRow icon={Calendar} label="To Date" value={safeFormat(normalized.toDate)} />
+            <DetailRow icon={Clock} label="Start Time" value={normalized.startTime} />
+            <DetailRow icon={Clock} label="End Time" value={normalized.endTime} />
+            <DetailRow icon={MapPin} label="Place" value={normalized.place} />
+            <DetailRow icon={FileText} label="Purpose" value={normalized.purpose} />
           </>
         );
 
       case 'complaint':
-        return (
-          <>
-            <DetailRow icon={FileText} label="Complaint" value={request.text} />
-            {request.file && (
-              <DetailRow
-                icon={FileText}
-                label="Attachment"
-                value={
-                  <a href={request.file} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {request.fileName}
-                  </a>
-                }
-              />
-            )}
-          </>
-        );
+        return <DetailRow icon={FileText} label="Complaint" value={(request as any).text} />;
     }
   };
 
@@ -152,8 +148,8 @@ export function RequestDetailModal({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span className="capitalize">{request.type} Request</span>
-            <StatusBadge status={request.status} />
+            <span className="capitalize">{normalized.type} Request</span>
+            <StatusBadge status={normalized.status as any} />
           </DialogTitle>
         </DialogHeader>
 
@@ -165,21 +161,21 @@ export function RequestDetailModal({
             </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span className="text-muted-foreground">Name:</span>
-              <span>{studentName}</span>
+              <span>{normalized.studentName || '-'}</span>
               <span className="text-muted-foreground">Roll No:</span>
-              <span>{rollNumber}</span>
+              <span>{normalized.rollNumber || '-'}</span>
               <span className="text-muted-foreground">Department:</span>
-              <span>{request.department || 'CSE'}</span>
+              <span>{normalized.department || '-'}</span>
             </div>
           </div>
 
           <div className="space-y-3">
             <h4 className="font-medium">Request Details</h4>
             {renderDetails()}
-            <DetailRow icon={Clock} label="Submitted" value={safeFormat(createdAt, 'datetime')} />
+            <DetailRow icon={Clock} label="Submitted" value={safeFormat(normalized.createdAt, 'datetime')} />
           </div>
 
-          {showActions && request.status === 'pending' && (
+          {showActions && normalized.status === 'pending' && (
             <div className="space-y-3 pt-4 border-t">
               <Textarea
                 placeholder="Add a comment (optional)"

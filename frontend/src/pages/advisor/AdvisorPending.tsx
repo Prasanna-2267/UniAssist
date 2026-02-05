@@ -15,59 +15,44 @@ export default function AdvisorPending() {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
 
-React.useEffect(() => {
-  advisorApi
-    .getPendingAll()
-    .then((data) => {
-      const merged = [
-        ...data.leaves.map((r: any) => ({
-          ...r,
-          type: "leave",
-          studentName: r.name,
-          rollNumber: r.reg_no,
-          department: r.department || "CSE",
-          created_at: r.created_at,
-          status: "pending",
-        })),
-        ...data.bonafides.map((r: any) => ({
-          ...r,
-          type: "bonafide",
-          studentName: r.name,
-          rollNumber: r.reg_no,
-          department: r.department || "CSE",
-          created_at: r.created_at,
-          status: "pending",
-        })),
-        ...data.outpasses.map((r: any) => ({
-          ...r,
-          type: "outpass",
-          studentName: r.name,
-          rollNumber: r.reg_no,
-          department: r.department || "CSE",
-          created_at: r.created_at,
-          status: "pending",
-        })),
-        ...data.ods.map((r: any) => ({
-          ...r,
-          type: "od",
-          studentName: r.name,
-          rollNumber: r.reg_no,
-          department: r.department || "CSE",
-          created_at: r.created_at,
-          status: "pending",
-        })),
-      ];
+  React.useEffect(() => {
+    advisorApi
+      .getPendingAll()
+      .then((data) => {
+        const merged = [
+          ...data.leaves,
+          ...data.bonafides,
+          ...data.outpasses,
+          ...data.ods,
+        ];
 
-      setRequests(merged);
-    })
-    .catch(() => toast.error("Failed to load pending requests"))
-    .finally(() => setLoading(false));
-}, []);
+        // ⭐ NORMALIZATION (CRITICAL FIX)
+        const normalized = merged.map((r: any) => ({
+          ...r,
+          id: r.id ?? r.leave_id ?? r.request_id ?? r.outpass_id ?? r.od_id,
+          type: r.type?.toLowerCase(),
+          status: "pending",
+          studentName: r.name,
+          rollNumber: r.reg_no,
+          department: r.department || "CSE",
+          created_at:
+            r.created_at || r.applied_at || r.start_date || r.out_date || r.from_date,
+        }));
 
+        setRequests(normalized);
+      })
+      .catch(() => toast.error("Failed to load pending requests"))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleRowClick = (request: any) => {
-    setSelectedRequest(request);
-    setModalOpen(true);
+  const handleRowClick = async (request: any) => {
+    try {
+      const detail = await advisorApi.getRequestDetail(request.type, request.id);
+      setSelectedRequest(detail);
+      setModalOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch detail", err);
+    }
   };
 
   const handleApprove = async (comment?: string) => {
@@ -75,13 +60,12 @@ React.useEffect(() => {
     try {
       await advisorApi.reviewRequest(
         selectedRequest.type,
-        selectedRequest.request_id,
+        selectedRequest.id,   // ⭐ FIXED
         "APPROVED",
         comment
       );
-      setRequests((prev) =>
-        prev.filter((r) => r.request_id !== selectedRequest.request_id)
-      );
+
+      setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
       setModalOpen(false);
       toast.success("Request approved");
     } catch {
@@ -94,13 +78,12 @@ React.useEffect(() => {
     try {
       await advisorApi.reviewRequest(
         selectedRequest.type,
-        selectedRequest.request_id,
+        selectedRequest.id,   // ⭐ FIXED
         "REJECTED",
         comment
       );
-      setRequests((prev) =>
-        prev.filter((r) => r.request_id !== selectedRequest.request_id)
-      );
+
+      setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
       setModalOpen(false);
       toast.success("Request rejected");
     } catch {
@@ -123,23 +106,14 @@ React.useEffect(() => {
       key: "type",
       header: "Type",
       render: (row: any) => (
-        <span className="font-medium capitalize">{row.type.toLowerCase()}</span>
+        <span className="font-medium capitalize">{row.type}</span>
       ),
     },
     {
       key: "created_at",
       header: "Applied On",
       render: (row: any) =>
-        {
-    const date =
-      row.created_at ||
-      row.applied_at ||
-      row.start_date ||
-      row.out_date ||
-      row.from_date;
-
-    return date ? format(new Date(date), "PP") : "-";
-  },
+        row.created_at ? format(new Date(row.created_at), "PP") : "-",
     },
     {
       key: "status",
@@ -168,7 +142,7 @@ React.useEffect(() => {
               data={requests}
               columns={columns}
               searchPlaceholder="Search by student name..."
-              searchKey="name"
+              searchKey="studentName"
               onRowClick={handleRowClick}
               emptyMessage="No pending requests"
             />

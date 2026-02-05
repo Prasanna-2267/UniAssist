@@ -121,9 +121,14 @@ createComplaint: async (text: string, file?: File) => {
   getRecentRequests: () =>
     fetchWithAuth("/student/recent-requests"),
 
+  getRequestDetail: (type: string, id: number) =>
+  fetchWithAuth(`/${type}/detail/${id}`),
+
   getStudentRequests : async () => {
   const res = await fetchWithAuth("/student/requests");
   return res;   // should be array
+
+  
 },
 
 

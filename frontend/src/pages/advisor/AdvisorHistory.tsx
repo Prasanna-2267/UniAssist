@@ -30,17 +30,33 @@ React.useEffect(() => {
         ...data.ods,
       ];
 
-      setRequests(merged);
+      // ⭐ NORMALIZE HERE
+      const normalized = merged.map((r: any) => ({
+        ...r,
+        id: r.id ?? r.leave_id ?? r.request_id ?? r.od_id ?? r.outpass_id,
+        type: r.type?.toLowerCase(),
+        status: r.status?.toLowerCase(),
+      }));
+
+      setRequests(normalized);
     })
     .catch(() => toast.error("Failed to load history"))
     .finally(() => setLoading(false));
 }, []);
 
 
-  const handleRowClick = (request: any) => {
-    setSelectedRequest(request);
+
+  const handleRowClick = async (request) => {
+  try {
+    const detail = await advisorApi.getRequestDetail(request.type, request.id);
+    setSelectedRequest(detail);  // no map
     setModalOpen(true);
-  };
+  } catch (err) {
+    console.error("Failed to fetch detail", err);
+  }
+};
+
+
 
   const columns = [
   {
